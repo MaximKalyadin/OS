@@ -12,10 +12,10 @@ public class Unit {
     public Unit(int memRAM, int sizeOfPage){
         tablePages = new ArrayList<Page>();
         tablePageFrames = new ArrayList<Page>();
-        countPageFrames = memRAM/sizeOfPage;
+        countPageFrames = memRAM / sizeOfPage;
 
-        for(int i = 0; i <(memRAM * 2)/sizeOfPage; i++){
-            Page page = new Page(false, false);
+        for(int i = 0; i < (memRAM * 8) / sizeOfPage; i++){
+            Page page = new Page(false);
             page.setnumpage(Integer.MAX_VALUE);
             tablePages.add(page);
         }
@@ -25,43 +25,35 @@ public class Unit {
     public void inputnumpage(int pageIndex){
         Page page = tablePages.get(pageIndex);
         if(!page.isabsence()){
-            if(tablePageFrames.size() < countPageFrames){
-                page.setabsence(true);
-                page.setR(true);
-                tablePageFrames.add(page);
-                int indexOfPageFrames = tablePageFrames.indexOf(page);
-                page.setnumpage(indexOfPageFrames);
-            }else if(tablePageFrames.size() == countPageFrames){
-                Algorithm(page);
-            }
-        }else{
-            page.setR(true);
+        	k = pageIndex / countPageFrames;
+            Algorithm(page);
         }
+        
         printPageFrames();
         printPages();
     }
-
+    
     private void Algorithm(Page page){
-        for (;;) {
-            if(k == tablePageFrames.size()){
-                k = 0;
-            }
-            if(tablePageFrames.get(k).isR()){
-                tablePageFrames.get(k).setR(false);
-                k++;
-            }else{
-                tablePageFrames.get(k).setabsence(false);
-                tablePageFrames.get(k).setnumpage(Integer.MAX_VALUE);
-                tablePageFrames.remove(k);
-                tablePageFrames.add(k, page);
-                page.setnumpage(k);
-                page.setR(true);
-                page.setabsence(true);
-                System.out.println("Выселение страницы с номером " + k);
-                k++;
-                return;
-            }
-        }
+    	for (int i = 0; i < countPageFrames; i++) {
+    		if (tablePageFrames.size() > i) {
+	    		tablePageFrames.get(i).setabsence(false);
+	            tablePageFrames.get(i).setnumpage(Integer.MAX_VALUE);
+	            tablePageFrames.remove(i);
+	            System.out.println("Выселение страницы с номером " + i);
+    		}
+            
+            Page current = tablePages.get(k * countPageFrames + i);
+            tablePageFrames.add(i, current);
+            current.setnumpage(i);
+            current.setabsence(true);
+    	}
+    	
+    	if (!tablePageFrames.contains(page)) {
+    		tablePageFrames.get(0).setabsence(false);
+            tablePageFrames.get(0).setnumpage(Integer.MAX_VALUE);
+            tablePageFrames.remove(0);
+            tablePageFrames.add(0, page);
+    	}
     }
 
     public int getSizePageTable(){
@@ -72,7 +64,7 @@ public class Unit {
         int i = 0;
         System.out.println("Таблица страничных блоков \n" + "| i  R  P_A |");
         for (Page current_page: tablePageFrames) {
-            System.out.println("| " + i + " " + current_page.isR() + " " + current_page.isabsence() + " |");
+            System.out.println("| " + i + " " + current_page.isabsence() + " |");
             i++;
         }
         System.out.println();
@@ -81,8 +73,7 @@ public class Unit {
     private void printPages(){
         System.out.println("Таблица страниц \n" + "| i   R    P_A   IndexFrame |");
         for(int i = 0; i<tablePages.size(); i++){
-            System.out.println("| " + i + " " + tablePages.get(i).isR() + " "
-                    + tablePages.get(i).isabsence() + " " + tablePages.get(i).getnumpage() + " |");
+            System.out.println("| " + i + " " + tablePages.get(i).isabsence() + " " + tablePages.get(i).getnumpage() + " |");
         }
         System.out.println();
     }
