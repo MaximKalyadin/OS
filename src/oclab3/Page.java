@@ -1,27 +1,22 @@
 package oclab3;
 
 public class Page {
+	private boolean used = false;
+    private long lastTime = 0;
 
-    private boolean absence;
-    private int numpage;
-
-    public Page(boolean absence){
-        this.absence = absence;
+    public boolean isUsed() {
+        return used;
     }
 
-    public boolean isabsence() {
-        return absence;
+    public void setUsed(boolean absence) {
+        this.used = absence;
     }
-
-    public void setabsence(boolean absence) {
-        this.absence = absence;
+    
+    public long getLastTime() {
+    	return lastTime;
     }
-
-    public int getnumpage() {
-        return numpage;
-    }
-
-    public void setnumpage(int numpage) {
-        this.numpage = numpage;
+    
+    public void setLastTime(long time) {
+    	lastTime = time;
     }
 }

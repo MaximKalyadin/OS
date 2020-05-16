@@ -3,56 +3,78 @@ package oclab3;
 import java.util.ArrayList;
 
 public class Unit {
-	
+
     private ArrayList<Page> tablePages;
     private ArrayList<Page> tablePageFrames;
-    private int countPageFrames;
-    private int k;
+    
+	private int time;
 
     public Unit(int memRAM, int sizeOfPage){
         tablePages = new ArrayList<Page>();
         tablePageFrames = new ArrayList<Page>();
-        countPageFrames = memRAM / sizeOfPage;
 
-        for(int i = 0; i < (memRAM * 8) / sizeOfPage; i++){
-            Page page = new Page(false);
-            page.setnumpage(Integer.MAX_VALUE);
+        for (int i = 0; i < (memRAM * 8) / sizeOfPage; i++){
+            Page page = new Page();
             tablePages.add(page);
         }
-        k = 0;
+        
+        for (int i = 0; i < memRAM / sizeOfPage / 2; i++) {
+        	tablePageFrames.add(tablePages.get(i));
+        }
+        
+        time = 1;
     }
 
-    public void inputnumpage(int pageIndex){
-        Page page = tablePages.get(pageIndex);
-        if(!page.isabsence()){
-        	k = pageIndex / countPageFrames;
-            Algorithm(page);
+    public void addressToPage(int index){
+        Page page = tablePages.get(index);
+        
+        if (!tablePageFrames.contains(page)) {
+        	algorithm(page);
+        }
+
+        page.setUsed(true);
+        page.setLastTime(time);
+        
+        time++;
+        
+        if (time % 8 == 0) {
+        	clearUsed();
         }
         
         printPageFrames();
         printPages();
     }
     
-    private void Algorithm(Page page){
-    	for (int i = 0; i < countPageFrames; i++) {
-    		if (tablePageFrames.size() > i) {
-	    		tablePageFrames.get(i).setabsence(false);
-	            tablePageFrames.get(i).setnumpage(Integer.MAX_VALUE);
-	            tablePageFrames.remove(i);
-	            System.out.println("Выселение страницы с номером " + i);
+    private void algorithm(Page page){
+    	ArrayList<Page> candidatesForDeletion = new ArrayList<Page>();
+    	
+    	for (int i = 0; i < tablePageFrames.size(); i++) {
+    		Page currentPage = tablePageFrames.get(i);
+    		
+    		if (!currentPage.isUsed()) {
+    			candidatesForDeletion.add(currentPage);
     		}
-            
-            Page current = tablePages.get(k * countPageFrames + i);
-            tablePageFrames.add(i, current);
-            current.setnumpage(i);
-            current.setabsence(true);
     	}
     	
-    	if (!tablePageFrames.contains(page)) {
-    		tablePageFrames.get(0).setabsence(false);
-            tablePageFrames.get(0).setnumpage(Integer.MAX_VALUE);
-            tablePageFrames.remove(0);
-            tablePageFrames.add(0, page);
+    	candidatesForDeletion = candidatesForDeletion.isEmpty() ? tablePageFrames : candidatesForDeletion;
+    	Page pageForDeletion = candidatesForDeletion.get(0);
+    	
+    	for (int i = 0; i < candidatesForDeletion.size(); i++) {
+    		Page currentPage = candidatesForDeletion.get(i);
+    		
+    		if (currentPage.getLastTime() < pageForDeletion.getLastTime()) {
+    			pageForDeletion = currentPage;
+    		}
+    	}
+    	
+    	tablePageFrames.remove(pageForDeletion);
+    	tablePageFrames.add(page);
+    }
+    
+    private void clearUsed() {
+    	for (int i = 0; i < tablePageFrames.size(); i++) {
+    		Page currentPage = tablePageFrames.get(i);
+    		currentPage.setUsed(false);
     	}
     }
 
@@ -61,20 +83,26 @@ public class Unit {
     }
 
     public void printPageFrames(){
-        int i = 0;
-        System.out.println("Таблица страничных блоков \n" + "| i  R  P_A |");
-        for (Page current_page: tablePageFrames) {
-            System.out.println("| " + i + " " + current_page.isabsence() + " |");
-            i++;
+        System.out.println("Таблица страничных блоков");
+        System.out.println("i\tisUsed\tlastTime");
+        
+        for (int i = 0; i < tablePageFrames.size(); i++) {
+    		Page currentPage = tablePageFrames.get(i);
+            System.out.println(i + "\t" + currentPage.isUsed() + "\t" + currentPage.getLastTime());
         }
+        
         System.out.println();
     }
 
     private void printPages(){
-        System.out.println("Таблица страниц \n" + "| i   R    P_A   IndexFrame |");
-        for(int i = 0; i<tablePages.size(); i++){
-            System.out.println("| " + i + " " + tablePages.get(i).isabsence() + " " + tablePages.get(i).getnumpage() + " |");
+        System.out.println("Таблица страниц");
+        System.out.println("i\tisUsed\tlastTime");
+        
+        for (int i = 0; i < tablePages.size(); i++) {
+    		Page currentPage = tablePages.get(i);
+            System.out.println(i + "\t" + currentPage.isUsed() + "\t" + currentPage.getLastTime());
         }
+        
         System.out.println();
     }
 }
