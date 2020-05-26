@@ -6,25 +6,15 @@ public class File {
 	private String name;
 	private String extension;
 	
-	private Node node;
+	private int firstSectorNumber;
 	
 	public File(String name, String extension) {
 		this.name = name;
 		this.extension = extension;
-		
-		node = new Node();
 	}
 	
-	public void addSectorNumber(int number) {
-		node.addSectorNumber(number);
-	}
-	
-	public void removeSectorsNumbers(int count) {
-		node.removeSectorsNumbers(count);
-	}
-	
-	public ArrayList<Integer> getSectorsNumbers() {
-		return node.getSectorsNumbers();
+	public int getfirstSectorNumber() {
+		return firstSectorNumber;
 	}
 	
 	public String getName() {

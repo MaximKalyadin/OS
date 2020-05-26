@@ -3,10 +3,13 @@ package oclab4;
 public class DiskSector {
 private final int size;
 	
+	private int nextSectorNumber;
 	private String data;
 	
 	public DiskSector(int size) {
 		this.size = size;
+		
+		nextSectorNumber = -1;
 		data = "";
 	}
 	
@@ -16,5 +19,13 @@ private final int size;
 	
 	public String read() {
 		return new String(data);
+	}
+
+	public int getNextSectorNumber() {
+		return nextSectorNumber;
+	}
+
+	public void setNextSectorNumber(int nextSectorNumber) {
+		this.nextSectorNumber = nextSectorNumber;
 	}
 }

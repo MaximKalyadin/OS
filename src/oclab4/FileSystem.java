@@ -51,7 +51,7 @@ private boolean map[];
 	public String read(File file) {
 		String data = "";
 		
-		ArrayList<Integer> sectorsNumbers = file.getSectorsNumbers();
+		ArrayList<Integer> sectorsNumbers = getSectorsNumbers(file);
 		
 		for (int i = 0; i < sectorsNumbers.size(); i++) {
 			data += diskPart.readDataFromSector(sectorsNumbers.get(i));
@@ -67,7 +67,7 @@ private boolean map[];
 	}
 	
 	public void write(File file, String data) throws Exception {
-		ArrayList<Integer> sectorsNumbers = file.getSectorsNumbers();
+		ArrayList<Integer> sectorsNumbers = getSectorsNumbers(file);
 		int countRemoved = 0;
 		
 		for (int i = 0; i < sectorsNumbers.size(); i++) {
@@ -82,11 +82,11 @@ private boolean map[];
 			}
 		}
 		
-		file.removeSectorsNumbers(countRemoved);
+		removeSectorsNumbers(file, countRemoved);
 		
 		while (data.length() > 0) {
 			int additionalSectorNumber = reserveSector();
-			file.addSectorNumber(additionalSectorNumber);
+			addSectorNumber(file, additionalSectorNumber);
 			diskPart.writeDataIntoSector(additionalSectorNumber, data);
 			data = data.substring(sectorSize < data.length() ? sectorSize : data.length(), data.length());
 		}
@@ -146,7 +146,7 @@ private boolean map[];
 		String fullFileName = path + exFileName;
 		
 		File file = files.get(fullFileName);
-		ArrayList<Integer> sectorsNumbers = file.getSectorsNumbers();
+		ArrayList<Integer> sectorsNumbers = getSectorsNumbers(file);
 		
 		if (extension.isEmpty()) {
 			String data = read(file);
@@ -188,10 +188,48 @@ private boolean map[];
 		}
 	}
 	
+	private void removeSectorsNumbers(File file, int countRemoved) {
+		ArrayList<Integer> sectorNumbers = getSectorsNumbers(file);
+		int firstRemoved = sectorNumbers.size() - countRemoved - 1;
+		
+		while (firstRemoved != 0) {
+			sectorNumbers.remove(0);
+			firstRemoved--;
+		}
+		
+		for (int i = 0; i < sectorNumbers.size(); i++) {
+			diskPart.setNextSectorForSector(sectorNumbers.get(i), -1);
+		}
+	}
+	
+	private void addSectorNumber(File file, int additionalSectorNumber) {
+		ArrayList<Integer> sectorNumbers = getSectorsNumbers(file);
+		diskPart.setNextSectorForSector(sectorNumbers.get(sectorNumbers.size() - 1), additionalSectorNumber);
+	}
+	
 	public ArrayList<Integer> getFileSecotrNumbers(String path, String name, String extension) throws Exception {
 		String fullFileName = path + name + (extension.isEmpty() ? "" : ":" + extension);
 		File file = files.get(fullFileName);
-		return file.getSectorsNumbers();
+		return getSectorsNumbers(file);
+	}
+	
+	private ArrayList<Integer> getSectorsNumbers(File file) {
+		ArrayList<Integer> answer = new ArrayList<Integer>();
+		
+		int n = file.getfirstSectorNumber();
+		answer.add(n);
+		
+		while(true) {
+			n = diskPart.getNextSectorForSector(n);
+			
+			if (n >= 0) {
+				answer.add(n);
+			} else {
+				break;
+			}
+		}
+		
+		return answer;
 	}
 	
 	public boolean[] getMap() {
